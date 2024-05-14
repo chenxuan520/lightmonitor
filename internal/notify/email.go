@@ -1,6 +1,8 @@
 package notify
 
 import (
+	"fmt"
+
 	"github.com/chenxuan520/lightmonitor/internal/config"
 	mail "github.com/wneessen/go-mail"
 )
@@ -23,6 +25,9 @@ func NewEmail() *Email {
 }
 
 func (e *Email) Send(msg NotifyMsg) error {
+	if e.Domain == "" {
+		return fmt.Errorf("email domain is empty")
+	}
 	m := mail.NewMsg()
 	err := m.From(e.SendEmail)
 	if err != nil {
@@ -35,7 +40,7 @@ func (e *Email) Send(msg NotifyMsg) error {
 	m.Subject(msg.Title)
 	m.SetBodyString(mail.TypeTextPlain, msg.Content)
 	c, err := mail.NewClient(config.GlobalConfig.NotifyWay.Email.Domain, mail.WithPort(25), mail.WithSMTPAuth(mail.SMTPAuthPlain),
-		mail.WithUsername("my_username"), mail.WithPassword("extremely_secret_pass"))
+		mail.WithUsername(config.GlobalConfig.NotifyWay.Email.SendEmail), mail.WithPassword(config.GlobalConfig.NotifyWay.Email.Password))
 	if err != nil {
 		return err
 	}

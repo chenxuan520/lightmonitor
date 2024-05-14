@@ -1,0 +1,31 @@
+{
+	"server": {
+		"port": 5200,
+		"password": "example"
+	},
+	"monitors": [
+		{
+			"url": "https://example.com",
+			"method": "GET",
+			"interval_seconds": 10,
+			"max_offline_minutes": 1,
+			"remarks": "",
+			"notifications": [
+				"wechat",
+				"email"
+			]
+		}
+	],
+	"notify_way": {
+		"notify_interval_minutes": 60,
+		"email": {
+			"domain": "smtp.example.com",
+			"password": "example",
+			"send_email": "example@example.com",
+			"recv_email": "example@example.com"
+		},
+		"wechat": {
+			"send_key": "example"
+		}
+	}
+}

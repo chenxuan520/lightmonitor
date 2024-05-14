@@ -7,14 +7,15 @@ import (
 )
 
 type Server struct {
-	Port int `json:"port"`
+	Port     int    `json:"port"`
+	Password string `json:"password"`
 }
 
 type Monitor struct {
 	URL               string   `json:"url"`
 	Method            string   `json:"method"`
-	IntervalSeconds   int      `json:"interval_seconds"`
-	MaxOfflineMinutes int      `json:"max_offline_minutes"`
+	IntervalSeconds   int64    `json:"interval_seconds"`
+	MaxOfflineMinutes int64    `json:"max_offline_minutes"`
 	Remarks           string   `json:"remarks"`
 	Notifications     []string `json:"notifications"`
 }
@@ -31,8 +32,9 @@ type Wechat struct {
 }
 
 type NotifyWay struct {
-	Email  Email  `json:"email"`
-	Wechat Wechat `json:"wechat"`
+	NotifyIntervalMinutes int32  `json:"notify_interval_minutes"`
+	Email                 Email  `json:"email"`
+	Wechat                Wechat `json:"wechat"`
 }
 
 type Config struct {

@@ -19,6 +19,21 @@ func (a *AbstractNotify) Send(msg NotifyMsg) error {
 }
 
 // 策略模式
-func SendNotify(notify Notify, msg NotifyMsg) error {
-	return notify.Send(msg)
+func SendNotify(notify string, msg NotifyMsg) error {
+	n := GetNotifyByStr(notify)
+	if n == nil {
+		return fmt.Errorf("notify not found")
+	}
+	return n.Send(msg)
+}
+
+func GetNotifyByStr(notify string) Notify {
+	switch notify {
+	case "email":
+		return NewEmail()
+	case "wechat":
+		return NewWeChat()
+	default:
+		return nil
+	}
 }
