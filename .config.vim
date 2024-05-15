@@ -25,7 +25,7 @@ let s:pwd=expand('%:p:h')
 let g:Term_project_task=[
 			\{
 			\'name'       : 'build',
-			\'command'    : 'make',
+			\'command'    : 'go build -o lightmonitor cmd/main.go',
 			\'mode'       : 'quickfix',
 			\'path'       : s:root,
 			\'close'      : 2,
