@@ -170,6 +170,7 @@
         </div>
     </div>
 </body>
+<script src="https://unpkg.com/sweetalert2@11"></script>
 <script charset="utf-8">
     function updateData() {
         axios.get('/api/list')
@@ -179,8 +180,24 @@
             })
             .catch(function (error) {
                 if (error.response.status === 401) {
-                    password = prompt("请输入密码,并重新点击update按钮");
-                    axios.defaults.headers.common['Authorization'] = password;
+                    Swal.fire({
+                        title: "请输入密码",
+                        input: 'password',
+                        showCancelButton: false,
+                        confirmButtonText: '确认',
+                        inputAttributes: {
+                            autocapitalize: 'off'
+                        },
+                        showLoaderOnConfirm: true,
+                        preConfirm: (password) => {
+                            axios.defaults.headers.common['Authorization'] = password;
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    });
+                } else if (error.response.status === 403) {
+                    alert("密码错误频繁,等一会再输入");
+                    location.reload();
+                    return false;
                 } else {
                     console.log(error);
                     alert("error", error);
@@ -200,7 +217,7 @@
                 alert("error", error);
             });
     }
-    
+
     updateData();
 </script>
 

@@ -1,6 +1,7 @@
 package middlerware
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/chenxuan520/lightmonitor/internal/config"
@@ -19,8 +20,8 @@ func PasswdAuth() gin.HandlerFunc {
 			// 错误时间加3s
 			nextAllowTryPwdTime = time.Now().Unix() + 3
 
-			c.JSON(401, gin.H{
-				"code": 401,
+			c.JSON(http.StatusForbidden, gin.H{
+				"code": http.StatusForbidden,
 				"msg":  "password is too many error,please try again later",
 			})
 			c.Abort()
@@ -35,8 +36,8 @@ func PasswdAuth() gin.HandlerFunc {
 			// 错误时间加3s
 			nextAllowTryPwdTime = time.Now().Unix() + 3
 
-			c.JSON(401, gin.H{
-				"code": 401,
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code": http.StatusUnauthorized,
 				"msg":  "password is error",
 			})
 			c.Abort()
