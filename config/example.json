@@ -12,7 +12,8 @@
 			"remarks": "",
 			"notifications": [
 				"wechat",
-				"email"
+				"email",
+				"feishu"
 			]
 		}
 	],
@@ -26,6 +27,9 @@
 		},
 		"wechat": {
 			"send_key": "example"
+		},
+		"feishu": {
+			"web_hook": "example"
 		}
 	}
 }

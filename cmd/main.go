@@ -22,6 +22,8 @@ func main() {
 	{
 		api.GET("/list", w.ListTasks)
 		api.POST("/confirm", w.ConfirmTask)
+		// 消息实时推送中台
+		api.POST("/notify", w.NotifyMsg)
 	}
 	g.StaticFile("/", "./asserts/index.html")
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/chenxuan520/lightmonitor/internal/notify"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,16 +41,46 @@ func Error(g *gin.Context, status int, data string) {
 	})
 }
 
+type NotifyMsgReq struct {
+	Msg           notify.NotifyMsg `json:"msg"`
+	Notifications []string         `json:"notifications"`
+}
+
 func (w *Web) ConfirmTask(g *gin.Context) {
 	log.Println("INFO: Confirm received.")
+	if len(w.Cron.Tasks) == 0 {
+		Success(g, "ok")
+		return
+	}
 	w.Cron.ConfirmChan <- struct{}{}
 	Success(g, "ok")
 }
 
 func (w *Web) ListTasks(g *gin.Context) {
 	log.Println("INFO: List received.")
+	if len(w.Cron.Tasks) == 0 {
+		Success(g, []CronTask{})
+		return
+	}
 	result := make(chan struct{ Tasks []CronTask })
 	w.Cron.SnapshotChan <- result
 	tasks := <-result
 	Success(g, tasks.Tasks)
+}
+
+func (w *Web) NotifyMsg(g *gin.Context) {
+	log.Println("INFO: NotifyMsg received.")
+	var req NotifyMsgReq
+	if err := g.BindJSON(&req); err != nil {
+		Error(g, http.StatusBadRequest, err.Error())
+		return
+	}
+	for _, n := range req.Notifications {
+		err := notify.SendNotify(n, req.Msg)
+		if err != nil {
+			Error(g, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+	Success(g, "ok")
 }

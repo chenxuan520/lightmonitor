@@ -33,6 +33,8 @@ func GetNotifyByStr(notify string) Notify {
 		return NewEmail()
 	case "wechat":
 		return NewWeChat()
+	case "feishu":
+		return NewFeishu()
 	default:
 		return nil
 	}

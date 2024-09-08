@@ -3,8 +3,9 @@
 -  **chenxuan**
 ## 功能
 - 一个轻量化的监控工具
+- 一个负责实时通知的中台服务
 - 通过配置文件进行设置监控
-- 支持通过微信和邮箱两种形式发送告警信息
+- 支持通过微信和邮箱,飞书发送告警信息
 ## 安装
 1. `git clone https://github.com/chenxuan520/lightmonitor`
 2. `make`(确保安装例如go环境和make工具)
@@ -37,6 +38,9 @@
 		},
 		"wechat": {// 从 server酱 获取(一个负责接入微信推送的机构,直接搜索即可)
 			"send_key": "example"
+		},
+		"feishu": {// 飞书bot推送,参考 https://open.feishu.cn/document/client-docs/bot-v3/bot-overview
+			"web_hook": "example"
 		}
 	}
 ```

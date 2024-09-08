@@ -31,10 +31,15 @@ type Wechat struct {
 	SendKey string `json:"send_key"`
 }
 
+type Feishu struct {
+	WebHook string `json:"web_hook"`
+}
+
 type NotifyWay struct {
 	NotifyIntervalMinutes int32  `json:"notify_interval_minutes"`
 	Email                 Email  `json:"email"`
 	Wechat                Wechat `json:"wechat"`
+	Feishu                Feishu `json:"feishu"`
 }
 
 type Config struct {

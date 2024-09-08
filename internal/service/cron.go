@@ -52,6 +52,10 @@ func NewCron() *Cron {
 }
 
 func (c *Cron) Run() {
+	if len(c.Tasks) == 0 {
+		log.Println("INFO: No task")
+		return
+	}
 	sort.Sort(CronTasks(c.Tasks))
 	nextRunTask := &c.Tasks[0]
 	nextNotifyTime := time.Now().Unix() + int64(c.NotifyIntervalMinutes*60)
