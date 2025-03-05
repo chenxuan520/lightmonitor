@@ -4,15 +4,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/chenxuan520/lightmonitor/internal/monitor"
 	"github.com/chenxuan520/lightmonitor/internal/notify"
 	"github.com/gin-gonic/gin"
 )
 
 type Web struct {
-	Cron *Cron
+	Cron *monitor.Cron
 }
 
-func NewWeb(c *Cron) *Web {
+func NewWeb(c *monitor.Cron) *Web {
 	return &Web{
 		Cron: c,
 	}
@@ -59,10 +60,10 @@ func (w *Web) ConfirmTask(g *gin.Context) {
 func (w *Web) ListTasks(g *gin.Context) {
 	log.Println("INFO: List received.")
 	if len(w.Cron.Tasks) == 0 {
-		Success(g, []CronTask{})
+		Success(g, []monitor.CronTask{})
 		return
 	}
-	result := make(chan struct{ Tasks []CronTask })
+	result := make(chan struct{ Tasks []monitor.CronTask })
 	w.Cron.SnapshotChan <- result
 	tasks := <-result
 	Success(g, tasks.Tasks)
