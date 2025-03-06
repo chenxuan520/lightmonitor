@@ -35,6 +35,8 @@ func GetNotifyByStr(notify string) Notify {
 		return NewWeChat()
 	case "feishu":
 		return NewFeishu()
+	case "stdio":
+		return NewStdio()
 	default:
 		return nil
 	}

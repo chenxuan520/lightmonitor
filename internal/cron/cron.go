@@ -36,6 +36,7 @@ type CronStatus int8
 const (
 	Inited CronStatus = 0
 	Runing CronStatus = 1
+	Exited CronStatus = 2
 )
 
 type Cron struct {
@@ -44,6 +45,7 @@ type Cron struct {
 	logger         *log.Logger
 	AddTaskChan    chan CronTask
 	DeleteTaskChan chan string
+	ExitChan       chan struct{}
 	SnapshotChan   chan chan struct{ Tasks []CronTask }
 }
 
@@ -57,8 +59,24 @@ func NewCron(logger *log.Logger) *Cron {
 		logger:         logger,
 		AddTaskChan:    make(chan CronTask),
 		DeleteTaskChan: make(chan string),
+		ExitChan:       make(chan struct{}),
 		SnapshotChan:   make(chan chan struct{ Tasks []CronTask }),
 	}
+}
+
+func (c *Cron) Stop() {
+	c.ExitChan <- struct{}{}
+}
+
+func (c *Cron) DeleteTask(taskName string) {
+	c.DeleteTaskChan <- taskName
+}
+
+func (c *Cron) Snapshot() []CronTask {
+	snapshotChan := make(chan struct{ Tasks []CronTask })
+	c.SnapshotChan <- snapshotChan
+	result := <-snapshotChan
+	return result.Tasks
 }
 
 func (c *Cron) AddTask(task CronTask) error {
@@ -69,35 +87,57 @@ func (c *Cron) AddTask(task CronTask) error {
 	if c.Status == Runing {
 		c.AddTaskChan <- task
 	} else {
+		for _, t := range c.Tasks {
+			if t.Name() == task.Name() {
+				t = task
+				return nil
+			}
+		}
 		c.Tasks = append(c.Tasks, task)
 	}
 	return nil
 }
 
-func (c *Cron) Run() {
+func (c *Cron) Run() error {
+	if c.Status == Runing || c.Status == Exited {
+		return errors.New("cron is running or exited")
+	}
+
 	c.Status = Runing
 
 	// add forever task
-	c.AddTask(&ForeverTask{})
+	c.Tasks = append(c.Tasks, &ForeverTask{})
 
 	sort.Sort(CronTasks(c.Tasks))
 	nextRunTask := c.Tasks[0]
 	for {
 		select {
-		case <-time.After(time.Duration(nextRunTask.NextRunTime() - time.Now().Unix())):
-
+		case <-time.After(time.Duration(nextRunTask.NextRunTime()-time.Now().Unix()) * time.Second):
 			c.logger.Printf("INFO: Run task %s", nextRunTask.Name())
+			lastRunTime := nextRunTask.NextRunTime()
 			nextRunTask.Run()
-			if nextRunTask.NextRunTime() == -1 || nextRunTask.NextRunTime() < time.Now().Unix() {
+			if nextRunTask.NextRunTime() == -1 || nextRunTask.NextRunTime() <= time.Now().Unix() || nextRunTask.NextRunTime() == lastRunTime {
 				c.Tasks = c.Tasks[1:]
 			}
+			c.logger.Printf("INFO: Task %s run finish", nextRunTask.Name())
 
 			sort.Sort(CronTasks(c.Tasks))
 			if len(c.Tasks) == 0 {
 				// 理论上不会执行到这里
-				return
+				panic("no task to run")
 			}
 			nextRunTask = c.Tasks[0]
+			c.logger.Printf("INFO: Next run task %s diff time %v", nextRunTask.Name(), nextRunTask.NextRunTime()-time.Now().Unix())
+
+		case <-c.ExitChan:
+			// exit
+			c.Status = Exited
+			c.logger.Printf("INFO: Cron exit")
+			close(c.AddTaskChan)
+			close(c.DeleteTaskChan)
+			close(c.ExitChan)
+			close(c.SnapshotChan)
+			return nil
 
 		case newTask := <-c.AddTaskChan:
 			if newTask.NextRunTime() == -1 || newTask.NextRunTime() < time.Now().Unix() {
