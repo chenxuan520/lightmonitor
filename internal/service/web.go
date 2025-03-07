@@ -3,6 +3,7 @@ package service
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/chenxuan520/lightmonitor/internal/cron"
 	"github.com/chenxuan520/lightmonitor/internal/monitor"
@@ -15,10 +16,16 @@ type Web struct {
 	Cron        *cron.Cron
 }
 
-func NewWeb(c *monitor.Cron) *Web {
-	// TODO: 搬到这里来初始化, 并且完善route //
+func NewWeb() *Web {
+	m := monitor.NewCron()
+	go m.Run()
+
+	c := cron.NewCron(log.Default())
+	go c.Run()
+
 	return &Web{
-		MonitorCron: c,
+		MonitorCron: m,
+		Cron:        c,
 	}
 }
 
@@ -89,6 +96,16 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 			}
 		}
 	} else {
+		task := &cron.NotifyOnceTask{
+			TaskName: "notify_once_task_" + req.Msg.Title + time.Now().String(),
+			NotifyMsg: notify.NotifyMsg{
+				Title:   req.Msg.Title,
+				Content: req.Msg.Content,
+			},
+			RunTime:    req.NotifyTime,
+			NotifyWays: req.Notifications,
+		}
+		w.Cron.AddTask(task)
 
 	}
 	Success(g, "ok")
