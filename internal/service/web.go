@@ -3,6 +3,7 @@ package service
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/chenxuan520/lightmonitor/internal/cron"
@@ -128,6 +129,7 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 	}
 
 	taskName := ""
+	titleSuffix := req.Msg.Title + "_" + strconv.FormatInt(time.Now().Unix(), 10)
 	if req.NotifyTime == 0 {
 		for _, n := range req.Notifications {
 			err := notify.SendNotify(n, req.Msg)
@@ -138,7 +140,7 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 		}
 	} else if req.CycleTime == 0 {
 		task := &cron.NotifyOnceTask{
-			TaskName: "notify_once_task_" + req.Msg.Title + time.Now().String(),
+			TaskName: "notify_once_task_" + titleSuffix,
 			NotifyMsg: notify.NotifyMsg{
 				Title:   req.Msg.Title,
 				Content: req.Msg.Content,
@@ -154,7 +156,7 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 		}
 	} else {
 		task := &cron.NotifyCycleTask{
-			TaskName:   "notify_cycle_task_" + req.Msg.Title + time.Now().String(),
+			TaskName:   "notify_cycle_task_" + titleSuffix,
 			NotifyMsg:  notify.NotifyMsg{Title: req.Msg.Title, Content: req.Msg.Content},
 			RunTime:    req.NotifyTime,
 			CycleTime:  req.CycleTime,

@@ -1,6 +1,8 @@
 package cron
 
-import "math"
+import (
+	"time"
+)
 
 type ForeverTask struct {
 }
@@ -10,7 +12,8 @@ func (f *ForeverTask) Name() string {
 }
 
 func (f *ForeverTask) NextRunTime() int64 {
-	return math.MaxInt64
+	// 100 年后
+	return time.Now().AddDate(100, 0, 0).Unix()
 }
 
 func (f *ForeverTask) Run() {
