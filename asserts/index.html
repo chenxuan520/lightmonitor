@@ -173,7 +173,7 @@
 <script src="https://unpkg.com/sweetalert2@11"></script>
 <script charset="utf-8">
     function updateData() {
-        axios.get('/api/list')
+        axios.get('/api/monitro/list')
             .then(function (response) {
                 console.log(response.data);
                 document.getElementById("text").value = JSON.stringify(response.data, null, 4);
@@ -207,7 +207,7 @@
 
     function confirmData() {
         var data = document.getElementById("text").value;
-        axios.post('/api/confirm', data)
+        axios.post('/api/monitor/confirm', data)
             .then(function (response) {
                 console.log(response.data);
                 alert("success");
