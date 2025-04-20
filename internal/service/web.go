@@ -55,6 +55,7 @@ func Error(g *gin.Context, status int, data string) {
 type NotifyMsgReq struct {
 	Msg           notify.NotifyMsg `json:"msg"`
 	NotifyTime    int64            `json:"notify_time"`
+	CycleTime     int64            `json:"cycle_time"`
 	Notifications []string         `json:"notifications"`
 }
 

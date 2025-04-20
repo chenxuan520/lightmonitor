@@ -6,7 +6,6 @@ import (
 	"github.com/chenxuan520/lightmonitor/internal/config"
 	"github.com/chenxuan520/lightmonitor/internal/middlerware"
 	"github.com/chenxuan520/lightmonitor/internal/service"
-	"github.com/chxuan520/lightmonitor/internal/monitor"
 	"github.com/gin-gonic/gin"
 )
 
