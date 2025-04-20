@@ -18,10 +18,16 @@ func main() {
 	api := g.Group("/api")
 	api.Use(middlerware.PasswdAuth())
 	{
-		api.GET("/list", w.ListTasks)
-		api.POST("/confirm", w.ConfirmTask)
+		// monitor 网页监控
+		monitorApi := api.Group("/monitor")
+		{
+			monitorApi.GET("/list", w.ListMonitorTask)
+			monitorApi.POST("/confirm", w.ConfirmMonitorTask)
+		}
 		// 消息实时推送中台
 		api.POST("/notify", w.NotifyMsg)
+		api.POST("/list", w.ListTask)
+		api.POST("/cancel", w.CancelTask)
 	}
 	g.StaticFile("/", "./asserts/index.html")
 

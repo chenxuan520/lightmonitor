@@ -10,22 +10,33 @@ import (
 
 type WeChat struct {
 	AbstractNotify
-	PostUrl string
+	PostUrls []string
 }
 
 func NewWeChat() *WeChat {
+	postUrls := make([]string, len(config.GlobalConfig.NotifyWay.Wechat.SendKeys))
+	for _, v := range config.GlobalConfig.NotifyWay.Wechat.SendKeys {
+		postUrls = append(postUrls, fmt.Sprintf("https://sctapi.ftqq.com/%s.send", v))
+
+	}
 	return &WeChat{
-		PostUrl: fmt.Sprintf("https://sctapi.ftqq.com/%s.send", config.GlobalConfig.NotifyWay.Wechat.SendKey),
+		PostUrls: postUrls,
 	}
 }
 
 func (w *WeChat) Send(msg NotifyMsg) error {
-	if w.PostUrl == "" {
+	if len(w.PostUrls) == 0 {
 		return fmt.Errorf("wechat not init")
 	}
-	_, err := utils.HttpRequest(context.Background(), "GET", w.PostUrl, nil, nil, map[string]string{
-		"title": msg.Title,
-		"desp":  msg.Content,
-	})
-	return err
+
+	for _, v := range w.PostUrls {
+		_, err := utils.HttpRequest(context.Background(), "GET", v, nil, nil, map[string]string{
+			"title": msg.Title,
+			"desp":  msg.Content,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -23,10 +23,20 @@ func TestCron_Run(t *testing.T) {
 	c.AddTask(&NotifyOnceTask{
 		TaskName: "1",
 		NotifyMsg: notify.NotifyMsg{
-			Title:   "test_title",
+			Title:   "test_title_" + "1",
 			Content: "test_content",
 		},
 		RunTime:    time.Now().Unix() + 3,
+		NotifyWays: []string{"stdio"},
+	})
+	c.AddTask(&NotifyCycleTask{
+		TaskName: "2",
+		NotifyMsg: notify.NotifyMsg{
+			Title:   "test_title_" + "2",
+			Content: "test_content",
+		},
+		RunTime:    time.Now().Unix() + 1,
+		CycleTime:  1,
 		NotifyWays: []string{"stdio"},
 	})
 	go func() {
@@ -35,6 +45,6 @@ func TestCron_Run(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	time.Sleep(4 * time.Second)
+	time.Sleep(5 * time.Second)
 	c.Stop()
 }

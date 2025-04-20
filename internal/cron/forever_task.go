@@ -16,3 +16,7 @@ func (f *ForeverTask) NextRunTime() int64 {
 func (f *ForeverTask) Run() {
 	return
 }
+
+func (f *ForeverTask) IsValid() bool {
+	return true
+}

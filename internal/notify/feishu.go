@@ -11,7 +11,7 @@ import (
 
 type Feishu struct {
 	AbstractNotify
-	WebHook string
+	WebHooks []string
 }
 
 type feishuMsg struct {
@@ -23,12 +23,12 @@ type feishuMsg struct {
 
 func NewFeishu() *Feishu {
 	return &Feishu{
-		WebHook: config.GlobalConfig.NotifyWay.Feishu.WebHook,
+		WebHooks: config.GlobalConfig.NotifyWay.Feishu.WebHooks,
 	}
 }
 
 func (f *Feishu) Send(msg NotifyMsg) error {
-	if f.WebHook == "" {
+	if len(f.WebHooks) == 0 {
 		return fmt.Errorf("feishu webhook is empty")
 	}
 	// build msg
@@ -45,8 +45,13 @@ func (f *Feishu) Send(msg NotifyMsg) error {
 		return err
 	}
 	// send msg
-	apis.HttpRequest(context.Background(), "POST", f.WebHook, []byte(body), map[string]string{
-		"Content-Type": "application/json",
-	}, nil)
+	for _, webHook := range f.WebHooks {
+		_, err := apis.HttpRequest(context.Background(), "POST", webHook, []byte(body), map[string]string{
+			"Content-Type": "application/json",
+		}, nil)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

@@ -1,8 +1,9 @@
 package cron
 
 import (
-	"github.com/chenxuan520/lightmonitor/internal/notify"
 	"log"
+
+	"github.com/chenxuan520/lightmonitor/internal/notify"
 )
 
 type NotifyOnceTask struct {
@@ -24,13 +25,20 @@ func (n *NotifyOnceTask) Run() {
 	for _, notifyWay := range n.NotifyWays {
 		way := notify.GetNotifyByStr(notifyWay)
 		if way == nil {
-			log.Printf("notify %s not found", notifyWay)
+			log.Printf("%s notify %s not found", n.TaskName, notifyWay)
 			continue
 		}
 		err := way.Send(n.NotifyMsg)
 		if err != nil {
-			log.Printf("notify %s error: %v", notifyWay, err)
+			log.Printf("%s notify %s error: %v", n.TaskName, notifyWay, err)
 			continue
 		}
 	}
+}
+
+func (n *NotifyOnceTask) IsValid() bool {
+	if n.RunTime == 0 {
+		return false
+	}
+	return true
 }

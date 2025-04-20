@@ -14,6 +14,8 @@ type CronTask interface {
 	NextRunTime() int64
 	// Run 执行任务
 	Run()
+	// IsValid 是否有效
+	IsValid() bool
 }
 
 // for sort func
@@ -82,6 +84,9 @@ func (c *Cron) Snapshot() []CronTask {
 func (c *Cron) AddTask(task CronTask) error {
 	if task.NextRunTime() == -1 || task.NextRunTime() < time.Now().Unix() {
 		return errors.New("task next run time is invalid")
+	}
+	if !task.IsValid() {
+		return errors.New("task is invalid")
 	}
 	c.logger.Printf("INFO: Add task %s", task.Name())
 	if c.Status == Runing {

@@ -28,11 +28,11 @@ type Email struct {
 }
 
 type Wechat struct {
-	SendKey string `json:"send_key"`
+	SendKeys []string `json:"send_keys"`
 }
 
 type Feishu struct {
-	WebHook string `json:"web_hook"`
+	WebHooks []string `json:"web_hooks"`
 }
 
 type NotifyWay struct {

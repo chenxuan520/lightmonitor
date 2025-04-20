@@ -59,7 +59,7 @@ type NotifyMsgReq struct {
 	Notifications []string         `json:"notifications"`
 }
 
-func (w *Web) ConfirmTask(g *gin.Context) {
+func (w *Web) ConfirmMonitorTask(g *gin.Context) {
 	log.Println("INFO: Confirm received.")
 	if len(w.MonitorCron.Tasks) == 0 {
 		Success(g, "ok")
@@ -69,7 +69,7 @@ func (w *Web) ConfirmTask(g *gin.Context) {
 	Success(g, "ok")
 }
 
-func (w *Web) ListTasks(g *gin.Context) {
+func (w *Web) ListMonitorTask(g *gin.Context) {
 	log.Println("INFO: List received.")
 	if len(w.MonitorCron.Tasks) == 0 {
 		Success(g, []monitor.CronTask{})
@@ -81,6 +81,44 @@ func (w *Web) ListTasks(g *gin.Context) {
 	Success(g, tasks.Tasks)
 }
 
+func (w *Web) ListTask(g *gin.Context) {
+	log.Println("INFO: List received.")
+	if len(w.Cron.Tasks) == 0 {
+		Success(g, []cron.CronTask{})
+		return
+	}
+	result := make(chan struct{ Tasks []cron.CronTask })
+	w.Cron.SnapshotChan <- result
+	tasks := <-result
+	type respDate struct {
+		TaskName    string `json:"task_name"`
+		NextRunTime int64  `json:"next_run_time"`
+	}
+	data := make([]respDate, len(tasks.Tasks))
+	for i, task := range tasks.Tasks {
+		data[i] = respDate{
+			TaskName:    task.Name(),
+			NextRunTime: task.NextRunTime(),
+		}
+	}
+	Success(g, map[string]interface{}{
+		"tasks": data,
+	})
+}
+
+func (w *Web) CancelTask(g *gin.Context) {
+	log.Println("INFO: Cancel received.")
+	var req struct {
+		TaskName string `json:"task_name"`
+	}
+	if err := g.BindJSON(&req); err != nil {
+		Error(g, http.StatusBadRequest, err.Error())
+		return
+	}
+	w.Cron.DeleteTaskChan <- req.TaskName
+	Success(g, "ok")
+}
+
 func (w *Web) NotifyMsg(g *gin.Context) {
 	log.Println("INFO: NotifyMsg received.")
 	var req NotifyMsgReq
@@ -88,6 +126,8 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 		Error(g, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	taskName := ""
 	if req.NotifyTime == 0 {
 		for _, n := range req.Notifications {
 			err := notify.SendNotify(n, req.Msg)
@@ -96,7 +136,7 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 				return
 			}
 		}
-	} else {
+	} else if req.CycleTime == 0 {
 		task := &cron.NotifyOnceTask{
 			TaskName: "notify_once_task_" + req.Msg.Title + time.Now().String(),
 			NotifyMsg: notify.NotifyMsg{
@@ -106,8 +146,28 @@ func (w *Web) NotifyMsg(g *gin.Context) {
 			RunTime:    req.NotifyTime,
 			NotifyWays: req.Notifications,
 		}
-		w.Cron.AddTask(task)
-
+		taskName = task.Name()
+		err := w.Cron.AddTask(task)
+		if err != nil {
+			Error(g, http.StatusInternalServerError, err.Error())
+			return
+		}
+	} else {
+		task := &cron.NotifyCycleTask{
+			TaskName:   "notify_cycle_task_" + req.Msg.Title + time.Now().String(),
+			NotifyMsg:  notify.NotifyMsg{Title: req.Msg.Title, Content: req.Msg.Content},
+			RunTime:    req.NotifyTime,
+			CycleTime:  req.CycleTime,
+			NotifyWays: req.Notifications,
+		}
+		taskName = task.Name()
+		err := w.Cron.AddTask(task)
+		if err != nil {
+			Error(g, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
-	Success(g, "ok")
+	Success(g, map[string]interface{}{
+		"task_name": taskName,
+	})
 }

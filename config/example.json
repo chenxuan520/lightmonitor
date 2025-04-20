@@ -26,10 +26,14 @@
 			"recv_email": "example@example.com"
 		},
 		"wechat": {
-			"send_key": "example"
+			"send_keys": [
+				"example"
+			]
 		},
 		"feishu": {
-			"web_hook": "example"
+			"web_hook": [
+				"example"
+			]
 		}
 	}
 }
