@@ -15,8 +15,9 @@ func main() {
 	g := gin.New()
 	w := service.NewWeb()
 
+	g.Use(middlerware.Cors())
 	api := g.Group("/api")
-	api.Use(middlerware.Cors(), middlerware.PasswdAuth())
+	api.Use(middlerware.PasswdAuth())
 	{
 		// monitor 网页监控
 		monitorApi := api.Group("/monitor")

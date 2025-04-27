@@ -31,7 +31,7 @@
 			]
 		},
 		"feishu": {
-			"web_hook": [
+			"web_hooks": [
 				"example"
 			]
 		}
