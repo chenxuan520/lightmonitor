@@ -14,10 +14,9 @@ type WeChat struct {
 }
 
 func NewWeChat() *WeChat {
-	postUrls := make([]string, len(config.GlobalConfig.NotifyWay.Wechat.SendKeys))
+	postUrls := []string{}
 	for _, v := range config.GlobalConfig.NotifyWay.Wechat.SendKeys {
 		postUrls = append(postUrls, fmt.Sprintf("https://sctapi.ftqq.com/%s.send", v))
-
 	}
 	return &WeChat{
 		PostUrls: postUrls,
